@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MoreVertical, CheckCircle, AlertCircle, FileSpreadsheet, AlertTriangle, Trash2 } from 'lucide-react';
 import { getAuditHistory, deleteAudit } from '../api/client';
+import Loader from '../components/Loader';
 
 export default function History() {
   const navigate = useNavigate();
@@ -37,7 +38,7 @@ export default function History() {
   };
 
   if (loading) {
-    return <div style={{ padding: '2rem' }}>Loading...</div>;
+    return <Loader message="Loading history..." />;
   }
 
   return (

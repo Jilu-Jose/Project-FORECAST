@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { AlertCircle, AlertTriangle, Info, TrendingUp, Workflow, CheckCircle2, Loader2 } from 'lucide-react';
 import { getAuditStatus, getAuditReport } from '../api/client';
 import FindingsTable from '../components/FindingsTable';
+import Loader from '../components/Loader';
 
 export default function Overview() {
   const { jobId } = useParams();
@@ -51,7 +52,7 @@ export default function Overview() {
   }
 
   if (!status || status.status !== 'complete' || !report) {
-    return <div style={{ padding: '2rem' }}>Processing Audit...</div>;
+    return <Loader message="Analyzing financial models..." />;
   }
 
   const summary = report.summary || {};

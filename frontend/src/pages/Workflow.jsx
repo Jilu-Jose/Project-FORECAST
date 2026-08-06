@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Workflow as WorkflowIcon, CheckCircle2, Loader2 } from 'lucide-react';
-import { getAuditStatus } from '../api/client';
+import { getAuditStatus, getAuditReport } from '../api/client';
+import Loader from '../components/Loader';
 
 export default function Workflow() {
   const { jobId } = useParams();
   const [status, setStatus] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let interval;
@@ -13,6 +15,7 @@ export default function Workflow() {
       try {
         const data = await getAuditStatus(jobId);
         setStatus(data);
+        setLoading(false);
       } catch (err) {
         // handle error silently
       }
@@ -22,8 +25,8 @@ export default function Workflow() {
     return () => clearInterval(interval);
   }, [jobId]);
 
-  if (!status) {
-    return <div style={{ padding: '2rem' }}>Loading workflow status...</div>;
+  if (loading) {
+    return <Loader message="Loading workflow status..." />;
   }
 
   return (

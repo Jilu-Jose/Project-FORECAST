@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { getAuditReport } from '../api/client';
 import FindingsTable from '../components/FindingsTable';
+import Loader from '../components/Loader';
 
 export default function Findings() {
   const { jobId } = useParams();
@@ -20,7 +21,7 @@ export default function Findings() {
     fetchReport();
   }, [jobId]);
 
-  if (!report) return <div style={{ padding: '2rem' }}>Loading findings...</div>;
+  if (!report) return <Loader message="Compiling findings..." />;
 
   const allFindings = [
     ...(report.formula_anomalies || []),

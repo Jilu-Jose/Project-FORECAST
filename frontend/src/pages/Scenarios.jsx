@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { TrendingDown, TrendingUp } from 'lucide-react';
 import { getAuditReport } from '../api/client';
 import SensitivityChart from '../components/SensitivityChart';
+import Loader from '../components/Loader';
 
 export default function Scenarios() {
   const { jobId } = useParams();
@@ -20,7 +21,7 @@ export default function Scenarios() {
     fetchReport();
   }, [jobId]);
 
-  if (!report) return <div style={{ padding: '2rem' }}>Loading scenarios...</div>;
+  if (!report) return <Loader message="Running scenario sensitivities..." />;
 
   const scenarios = report.scenario_results || [];
   

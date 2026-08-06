@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Eye, FileText, Download, Send, CheckCircle2, Circle } from 'lucide-react';
 import { getAuditReport, getDownloadUrl } from '../api/client';
+import Loader from '../components/Loader';
 
 export default function Reports() {
   const { jobId } = useParams();
@@ -20,7 +21,7 @@ export default function Reports() {
     fetchReport();
   }, [jobId]);
 
-  if (!report) return <div style={{ padding: '2rem' }}>Loading report...</div>;
+  if (!report) return <Loader message="Generating executive report..." />;
 
   return (
     <div style={{ display: 'flex', gap: '2rem', height: 'calc(100vh - 120px)' }}>
