@@ -1,5 +1,5 @@
 import { NavLink, useParams, useNavigate } from 'react-router-dom';
-import { UploadCloud, History, LayoutDashboard, FileSearch, LineChart, FileText, Settings } from 'lucide-react';
+import { UploadCloud, History, LayoutDashboard, FileSearch, LineChart, FileText, Settings, Workflow } from 'lucide-react';
 
 export default function Sidebar() {
   const { jobId } = useParams();
@@ -69,6 +69,13 @@ export default function Sidebar() {
             style={({ isActive }) => navStyle({ isActive: isActive && jobId })}
           >
             <FileText size={18} /> Reports
+          </NavLink>
+          <NavLink 
+            to={`/audit/${targetJobId}/workflow`} 
+            className={({isActive}) => `sidebar-link ${isActive && jobId ? 'active' : ''}`}
+            style={({ isActive }) => navStyle({ isActive: isActive && jobId })}
+          >
+            <Workflow size={18} /> Workflow
           </NavLink>
         </div>
       </nav>

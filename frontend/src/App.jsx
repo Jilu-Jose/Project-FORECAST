@@ -6,6 +6,7 @@ import Overview from './pages/Overview';
 import Findings from './pages/Findings';
 import Scenarios from './pages/Scenarios';
 import Reports from './pages/Reports';
+import Workflow from './pages/Workflow';
 
 export default function App() {
   return (
@@ -18,6 +19,7 @@ export default function App() {
           <Route path="/audit/:jobId/findings" element={<Findings />} />
           <Route path="/audit/:jobId/scenarios" element={<Scenarios />} />
           <Route path="/audit/:jobId/reports" element={<Reports />} />
+          <Route path="/audit/:jobId/workflow" element={<Workflow />} />
         </Route>
       </Routes>
     </BrowserRouter>
