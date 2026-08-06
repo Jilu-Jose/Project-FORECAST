@@ -26,7 +26,7 @@ class AuditState(TypedDict):
     List fields use operator.add as the reducer → appending to existing lists.
     """
 
-    # ── Input / metadata ──────────────────────────────────────────────────
+    # ── Input / metadata ──────────────────────────────────────────────────    # Upload info
     file_path: str
     company_name: str
     sector: str | None

@@ -8,6 +8,7 @@ export default function Overview() {
   const { jobId } = useParams();
   const [status, setStatus] = useState(null);
   const [report, setReport] = useState(null);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     let interval;
@@ -22,12 +23,32 @@ export default function Overview() {
         }
       } catch (err) {
         clearInterval(interval);
+        if (err.response?.status === 404) {
+          setError('Audit not found. It may have been deleted or the backend server was restarted.');
+        } else {
+          setError('Failed to load audit status.');
+        }
       }
     };
     poll();
     interval = setInterval(poll, 2000);
     return () => clearInterval(interval);
   }, [jobId]);
+
+  if (error) {
+    return (
+      <div style={{ padding: '2rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--status-critical-text)' }}>
+          <AlertTriangle size={24} />
+          <h3>Error Loading Audit</h3>
+        </div>
+        <p style={{ marginTop: '1rem' }}>{error}</p>
+        <p style={{ marginTop: '0.5rem', color: 'var(--text-muted)' }}>
+          Please click <strong>Run New Audit</strong> or <strong>Upload</strong> in the sidebar to start a new session.
+        </p>
+      </div>
+    );
+  }
 
   if (!status || status.status !== 'complete' || !report) {
     return <div style={{ padding: '2rem' }}>Processing Audit...</div>;

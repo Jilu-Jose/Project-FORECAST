@@ -1,8 +1,8 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDropzone } from 'react-dropzone';
-import { Upload, FileSpreadsheet, MoreVertical, AlertCircle, CheckCircle } from 'lucide-react';
-import { uploadAudit, getAuditHistory } from '../api/client';
+import { Upload, FileSpreadsheet, MoreVertical, AlertCircle, CheckCircle, Trash2 } from 'lucide-react';
+import { uploadAudit, getAuditHistory, deleteAudit } from '../api/client';
 
 export default function Ingestion() {
   const navigate = useNavigate();
@@ -23,6 +23,18 @@ export default function Ingestion() {
       setRecentUploads(data.items || []);
     } catch (err) {
       console.error("Failed to load history");
+    }
+  };
+
+  const handleDelete = async (e, id) => {
+    e.stopPropagation();
+    if (!window.confirm('Are you sure you want to delete this audit?')) return;
+    try {
+      await deleteAudit(id);
+      fetchHistory();
+    } catch (err) {
+      console.error(err);
+      alert('Failed to delete audit');
     }
   };
 
@@ -86,9 +98,11 @@ export default function Ingestion() {
         {file ? (
           <>
             <div className="upload-title">{file.name}</div>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
               {(file.size / 1024 / 1024).toFixed(2)} MB — Ready to process
             </p>
+            
+
             <button 
               className="btn btn-primary" 
               onClick={(e) => {
@@ -96,7 +110,7 @@ export default function Ingestion() {
                 handleSubmit();
               }}
               disabled={uploading}
-              style={{ marginTop: '1rem', minWidth: '160px' }}
+              style={{ marginTop: '0.5rem', minWidth: '160px' }}
             >
               {uploading ? 'Processing...' : 'Run Audit'}
             </button>
@@ -151,8 +165,14 @@ export default function Ingestion() {
                   </span>
                 </td>
                 <td style={{ textAlign: 'center' }}>
-                  <button style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>
-                    <MoreVertical size={16} />
+                  <button 
+                    onClick={(e) => handleDelete(e, run.id)}
+                    style={{ background: 'none', border: 'none', color: 'var(--status-critical-text)', cursor: 'pointer', opacity: 0.7 }}
+                    onMouseOver={(e) => e.currentTarget.style.opacity = 1}
+                    onMouseOut={(e) => e.currentTarget.style.opacity = 0.7}
+                    title="Delete Audit"
+                  >
+                    <Trash2 size={16} />
                   </button>
                 </td>
               </tr>

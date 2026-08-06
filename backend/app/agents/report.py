@@ -1,5 +1,5 @@
-"""Report Agent — compiles all audit findings into a structured
-investor-grade report using Gemini for narrative generation.
+"""Report Generation Agent — compiles the final findings into a comprehensive
+investor-grade report using NIM for narrative generation.
 """
 
 from __future__ import annotations
@@ -8,7 +8,7 @@ import logging
 from datetime import datetime, timezone
 
 from app.agents.state import AuditState
-from app.services.llm import get_gemini_client
+from app.services.llm import get_nim_client
 
 logger = logging.getLogger(__name__)
 
@@ -46,19 +46,8 @@ async def report_node(state: AuditState) -> dict:
         unrealistic = [a for a in assumptions if a.get("benchmark_verdict") == "unrealistic"]
         aggressive = [a for a in assumptions if a.get("benchmark_verdict") == "aggressive"]
 
-        # ── 2. Generate narrative with Gemini ────────────────────────────
-        report_md = await _generate_narrative(
-            company_name=state.get("company_name", "Unknown"),
-            sector=state.get("sector", "Unknown"),
-            formula_anomalies=formula_anomalies,
-            assumptions=assumptions,
-            consistency_issues=consistency_issues,
-            scenario_results=scenario_results,
-            cap_table_issues=cap_table_issues,
-            critical_count=critical_count,
-            warning_count=warning_count,
-            info_count=info_count,
-        )
+        # ── 2. Generate narrative with NIM ────────────────────────────
+        report_md = await _generate_narrative(state)
 
         # ── 3. Prepend metadata header ───────────────────────────────────
         header = _build_report_header(
@@ -91,20 +80,19 @@ async def report_node(state: AuditState) -> dict:
     }
 
 
-async def _generate_narrative(
-    company_name: str,
-    sector: str | None,
-    formula_anomalies: list[dict],
-    assumptions: list[dict],
-    consistency_issues: list[dict],
-    scenario_results: list[dict],
-    cap_table_issues: list[dict],
-    critical_count: int,
-    warning_count: int,
-    info_count: int,
-) -> str:
-    """Use Gemini to generate the narrative report."""
-    gemini = get_gemini_client()
+async def _generate_narrative(state: AuditState) -> str:
+    """Use LLM to generate the narrative report."""
+    nim = get_nim_client()
+    company_name = state.get("company_name", "Unknown")
+    sector = state.get("sector")
+    formula_anomalies = state.get("formula_anomalies", [])
+    assumptions = state.get("assumptions", [])
+    consistency_issues = state.get("consistency_issues", [])
+    scenario_results = state.get("scenario_results", [])
+    cap_table_issues = state.get("cap_table_issues", [])
+    
+    all_findings = formula_anomalies + consistency_issues + cap_table_issues
+    critical_count = sum(1 for f in all_findings if f.get("severity") == "critical")
 
     # Build the data summary for Gemini
     prompt = f"""Compile an investor-grade financial model audit report for {company_name} (sector: {sector or 'Unknown'}).
@@ -143,15 +131,18 @@ async def _generate_narrative(
             prompt += f"- [{c.get('severity', 'info').upper()}] {c.get('description', '')}\n"
 
     try:
-        report = await gemini.chat(
-            prompt=prompt,
-            system_instruction=REPORT_SYSTEM_PROMPT,
-            use_web_grounding=False,
+        messages = [
+            {"role": "system", "content": REPORT_SYSTEM_PROMPT},
+            {"role": "user", "content": prompt}
+        ]
+        
+        report = await nim.chat(
+            messages=messages,
             temperature=0.3,
         )
         return report
     except Exception as e:
-        logger.error(f"Gemini report generation failed: {e}")
+        logger.error(f"NIM report generation failed: {e}")
         # Build a structured fallback without LLM
         return _build_structured_sections(
             formula_anomalies, assumptions, consistency_issues,

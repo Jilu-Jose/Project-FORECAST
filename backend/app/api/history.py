@@ -168,3 +168,17 @@ async def diff_versions(
             f"{len(resolved_issues)} resolved issues"
         ),
     }
+
+@router.delete("/audit/{job_id}")
+async def delete_audit(
+    job_id: str,
+    session: AsyncSession = Depends(get_session),
+):
+    """Delete an audit run."""
+    run = await session.get(AuditRunDB, job_id)
+    if not run:
+        raise HTTPException(status_code=404, detail="Audit run not found")
+    
+    await session.delete(run)
+    await session.commit()
+    return {"status": "success", "message": f"Audit {job_id} deleted"}

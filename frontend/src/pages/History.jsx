@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MoreVertical, CheckCircle, AlertCircle, FileSpreadsheet, AlertTriangle } from 'lucide-react';
-import { getAuditHistory } from '../api/client';
+import { MoreVertical, CheckCircle, AlertCircle, FileSpreadsheet, AlertTriangle, Trash2 } from 'lucide-react';
+import { getAuditHistory, deleteAudit } from '../api/client';
 
 export default function History() {
   const navigate = useNavigate();
@@ -21,6 +21,18 @@ export default function History() {
       console.error(err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDelete = async (e, id) => {
+    e.stopPropagation();
+    if (!window.confirm('Are you sure you want to delete this audit?')) return;
+    try {
+      await deleteAudit(id);
+      fetchHistory();
+    } catch (err) {
+      console.error(err);
+      alert('Failed to delete audit');
     }
   };
 
@@ -75,8 +87,14 @@ export default function History() {
                   </span>
                 </td>
                 <td style={{ textAlign: 'center' }}>
-                  <button style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>
-                    <MoreVertical size={16} />
+                  <button 
+                    onClick={(e) => handleDelete(e, run.id)}
+                    style={{ background: 'none', border: 'none', color: 'var(--status-critical-text)', cursor: 'pointer', opacity: 0.7 }}
+                    onMouseOver={(e) => e.currentTarget.style.opacity = 1}
+                    onMouseOut={(e) => e.currentTarget.style.opacity = 0.7}
+                    title="Delete Audit"
+                  >
+                    <Trash2 size={16} />
                   </button>
                 </td>
               </tr>

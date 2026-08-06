@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import json
 import logging
+from typing import Any
 
 import networkx as nx
 
@@ -124,7 +125,7 @@ async def structural_node(state: AuditState) -> dict:
 
 
 async def _nim_classify_anomalies(candidates: list[dict]) -> list[dict]:
-    """Send hardcoded-value candidates to NIM for nuanced classification."""
+    """Send hardcoded-value candidates to LLM for nuanced classification."""
     anomalies = []
     nim = get_nim_client()
 

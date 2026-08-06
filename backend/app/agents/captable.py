@@ -153,7 +153,7 @@ def _check_option_pool(cells: list, sheet_name: str) -> list[dict]:
 
 
 async def _nim_analyze_captable(cells: list, sheet_name: str) -> list[dict]:
-    """Use NIM for deeper cap table analysis (SAFE conversion, dilution math)."""
+    """Use LLM for deeper cap table analysis (SAFE conversion, dilution math)."""
     issues = []
     nim = get_nim_client()
 

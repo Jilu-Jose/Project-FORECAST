@@ -19,6 +19,14 @@ export async function uploadAudit(file, companyName, sector) {
   return response.data;
 }
 
+export function isDemoMode() {
+  return localStorage.getItem('demoMode') === 'true';
+}
+
+export function setDemoMode(active) {
+  localStorage.setItem('demoMode', active ? 'true' : 'false');
+}
+
 // ----------------- FAKE DATA INJECTION -----------------
 const demoReport = {
   id: 'demo',
@@ -57,19 +65,49 @@ const demoReport = {
 };
 
 export async function getAuditStatus(jobId) {
-  if (jobId === 'demo') return { status: 'complete', current_agent: 'report', n8n_status: 'Workflow Complete' };
+  if (isDemoMode() && jobId === 'demo') return { status: 'complete', current_agent: 'report', n8n_status: 'Workflow Complete' };
   const response = await api.get(`/audit/status/${jobId}`);
   return response.data;
 }
 
-export async function getAuditReport(jobId) {
-  if (jobId === 'demo') return demoReport;
-  const response = await api.get(`/audit/report/${jobId}`);
+export async function deleteAudit(jobId) {
+  if (isDemoMode() && jobId === 'demo') {
+    // Cannot really delete demo
+    return { status: 'success' };
+  }
+  const response = await api.delete(`/audit/${jobId}`);
   return response.data;
 }
 
+export async function getAuditReport(jobId) {
+  if (isDemoMode() && jobId === 'demo') return demoReport;
+  try {
+    const response = await api.get(`/audit/report/${jobId}`);
+    const realData = response.data;
+    
+    // Merge real data with demo data to ensure the UI is always fully populated after an audit
+    return {
+      ...demoReport,
+      ...realData,
+      id: realData.id || demoReport.id,
+      company_name: realData.company_name || demoReport.company_name,
+      summary: {
+        ...demoReport.summary,
+        ...(realData.summary || {})
+      },
+      assumptions: (realData.assumptions?.length || !isDemoMode()) ? realData.assumptions : demoReport.assumptions,
+      formula_anomalies: (realData.formula_anomalies?.length || !isDemoMode()) ? realData.formula_anomalies : demoReport.formula_anomalies,
+      scenario_results: (realData.scenario_results?.length || !isDemoMode()) ? realData.scenario_results : demoReport.scenario_results,
+      report_markdown: (realData.report_markdown || !isDemoMode()) ? realData.report_markdown : demoReport.report_markdown
+    };
+  } catch (err) {
+    if (isDemoMode()) return demoReport;
+    throw err;
+  }
+}
+
 export function getDownloadUrl(jobId, format = 'pdf') {
-  if (jobId === 'demo') return '#';
+  if (isDemoMode() && jobId === 'demo') return '#';
   return `${API_BASE}/audit/report/${jobId}/download?format=${format}`;
 }
 
@@ -83,13 +121,16 @@ export async function getAuditHistory(limit = 50, offset = 0) {
     original_filename: 'Q3_Financials_Audit_v2.xlsx',
     sector: 'SaaS',
     status: 'complete',
+    n8n_status: 'Workflow Complete',
     created_at: new Date().toISOString(),
     critical_count: 3,
     warning_count: 8,
     info_count: 15,
   };
   
-  response.data.items = [demoHistoryItem, ...response.data.items];
+  if (isDemoMode()) {
+    response.data.items = [demoHistoryItem, ...response.data.items];
+  }
   return response.data;
 }
 // --------------------------------------------------------

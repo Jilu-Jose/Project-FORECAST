@@ -10,6 +10,7 @@ import logging
 from pathlib import Path
 
 from app.agents.state import AuditState
+from app.agents.ingestion import get_cached_workbook
 
 logger = logging.getLogger(__name__)
 
@@ -49,7 +50,8 @@ async def scenario_node(state: AuditState) -> dict:
 
     try:
         # Try to use the formulas library for genuine recalculation
-        results = await _run_formulas_scenarios(file_path, assumptions)
+        wb_data = get_cached_workbook(file_path)
+        results = await _run_formulas_scenarios(file_path, assumptions, wb_data)
     except Exception as e:
         logger.warning(f"Formulas library failed, falling back to estimation: {e}")
         # Fallback: use simple arithmetic estimation based on dependency fan-out
@@ -63,7 +65,7 @@ async def scenario_node(state: AuditState) -> dict:
 
 
 async def _run_formulas_scenarios(
-    file_path: str, assumptions: list[dict]
+    file_path: str, assumptions: list[dict], wb_data
 ) -> list[dict]:
     """Use the `formulas` library for genuine Excel recalculation."""
     import formulas
@@ -87,7 +89,7 @@ async def _run_formulas_scenarios(
         raise
 
     # Find output cells by scanning baseline results for metric labels
-    output_cells = _find_output_cells(baseline, wb_name)
+    output_cells = _find_output_cells(baseline, wb_name, wb_data)
 
     if not output_cells:
         logger.warning("Scenario Agent: could not identify output metric cells")
@@ -140,23 +142,25 @@ async def _run_formulas_scenarios(
     return results
 
 
-def _find_output_cells(baseline_results: dict, wb_name: str) -> dict[str, str]:
-    """Scan calculation results to find cells matching output metric patterns."""
+def _find_output_cells(baseline_results: dict, wb_name: str, wb_data) -> dict[str, str]:
+    """Scan calculation results and parsed labels to find output metrics."""
     output_cells = {}
 
-    if not isinstance(baseline_results, dict):
+    if not isinstance(baseline_results, dict) or not wb_data:
         return output_cells
 
-    for cell_ref, value in baseline_results.items():
-        if not isinstance(value, (int, float)):
+    for cell in wb_data.all_cells.values():
+        if not cell.label:
             continue
 
-        cell_ref_str = str(cell_ref).lower()
+        label_lower = str(cell.label).lower()
         for metric_name, patterns in OUTPUT_METRIC_PATTERNS.items():
             if metric_name not in output_cells:
                 for pattern in patterns:
-                    if pattern.lower() in cell_ref_str:
-                        output_cells[metric_name] = cell_ref
+                    if pattern.lower() in label_lower:
+                        qual_ref = f"'[{wb_name}]{cell.sheet}'!{cell.cell_ref}"
+                        if qual_ref in baseline_results:
+                            output_cells[metric_name] = qual_ref
                         break
 
     return output_cells

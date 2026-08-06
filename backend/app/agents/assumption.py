@@ -122,8 +122,14 @@ async def assumption_node(state: AuditState) -> dict:
         unmatched_candidates.extend(high_fanout_constants)
 
         if unmatched_candidates:
+            logger.info(f"Assumption Agent: sending {len(unmatched_candidates)} candidates to LLM")
             nim_assumptions = await _nim_extract_assumptions(unmatched_candidates)
-            assumptions.extend(nim_assumptions)
+            # De-duplicate: if NIM found something that our regex already found, skip it.
+            # Simple heuristic: check cell refs.
+            regex_cells = {a["cell"] for a in assumptions}
+            for na in nim_assumptions:
+                if na["cell"] not in regex_cells:
+                    assumptions.append(na)
 
     except Exception as e:
         logger.error(f"Assumption Agent error: {e}")
@@ -133,19 +139,10 @@ async def assumption_node(state: AuditState) -> dict:
             "assumptions": assumptions,
         }
 
-    # Deduplicate by (sheet, cell)
-    seen = set()
-    unique = []
-    for a in assumptions:
-        key = (a["sheet"], a["cell"])
-        if key not in seen:
-            seen.add(key)
-            unique.append(a)
-
-    logger.info(f"Assumption Agent: extracted {len(unique)} assumptions")
+    logger.info(f"Assumption Agent: found {len(assumptions)} assumptions total")
     return {
         "current_agent": "assumption",
-        "assumptions": unique,
+        "assumptions": assumptions,
     }
 
 
@@ -190,7 +187,7 @@ def _find_high_fanout_constants(wb_data) -> list[dict]:
 
 
 async def _nim_extract_assumptions(candidates: list[dict]) -> list[dict]:
-    """Use NIM to classify ambiguous cells as assumptions."""
+    """Use LLM to classify ambiguous cells as assumptions."""
     assumptions = []
     nim = get_nim_client()
 

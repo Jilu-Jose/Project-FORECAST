@@ -1,5 +1,5 @@
-"""Benchmark Agent — uses Gemini with web grounding to compare
-extracted assumptions against real sector benchmarks.
+"""Benchmark Agent — uses NIM (nemotron-3-ultra-550b-a55b) to compare
+extracted assumptions against real sector benchmarks based on internal knowledge.
 """
 
 from __future__ import annotations
@@ -8,7 +8,7 @@ import asyncio
 import logging
 
 from app.agents.state import AuditState
-from app.services.llm import get_gemini_client
+from app.services.llm import get_nim_client
 
 logger = logging.getLogger(__name__)
 
@@ -38,13 +38,13 @@ async def benchmark_node(state: AuditState) -> dict:
     # Process in small batches to respect rate limits
     benchmarked = []
     batch_size = 3
-    gemini = get_gemini_client()
+    nim = get_nim_client()
 
     try:
         for i in range(0, len(assumptions), batch_size):
             batch = assumptions[i : i + batch_size]
             tasks = [
-                _benchmark_single(gemini, assumption, sector)
+                _benchmark_single(nim, assumption, sector)
                 for assumption in batch
             ]
             results = await asyncio.gather(*tasks, return_exceptions=True)
@@ -81,8 +81,8 @@ async def benchmark_node(state: AuditState) -> dict:
     }
 
 
-async def _benchmark_single(gemini, assumption: dict, sector: str) -> dict:
-    """Benchmark a single assumption using Gemini + web search."""
+async def _benchmark_single(nim, assumption: dict, sector: str) -> dict:
+    """Benchmark a single assumption using NIM."""
     name = assumption.get("name", "Unknown")
     value = assumption.get("value", 0)
     unit = assumption.get("unit", "")
@@ -94,12 +94,15 @@ async def _benchmark_single(gemini, assumption: dict, sector: str) -> dict:
         f"- Sector: {sector}\n\n"
         f"Find current realistic benchmark ranges for this metric in the {sector} sector."
     )
+    
+    messages = [
+        {"role": "system", "content": BENCHMARK_SYSTEM_PROMPT},
+        {"role": "user", "content": prompt}
+    ]
 
     try:
-        response = await gemini.chat_json(
-            prompt=prompt,
-            system_instruction=BENCHMARK_SYSTEM_PROMPT,
-            use_web_grounding=True,
+        response = await nim.chat_json(
+            messages=messages,
             temperature=0.2,
         )
 
@@ -112,6 +115,6 @@ async def _benchmark_single(gemini, assumption: dict, sector: str) -> dict:
             updated["benchmark_reasoning"] = response.get("reasoning")
             return updated
     except Exception as e:
-        logger.warning(f"Gemini benchmark call failed for {name}: {e}")
+        logger.warning(f"NIM benchmark call failed for {name}: {e}")
 
     return assumption

@@ -100,6 +100,7 @@ async def run_audit(
         file_path: Path to the uploaded Excel file
         company_name: Name of the company being audited
         sector: Business sector for benchmark comparison
+        llm_model: The LLM backend to use ("hybrid", "gemini", or "nim")
 
     Returns:
         The final AuditState with all findings.
