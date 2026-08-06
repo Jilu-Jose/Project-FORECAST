@@ -141,6 +141,94 @@ We intentionally avoid the heavier LangChain abstractions (chains, retrievers, m
 
 ---
 
+## n8n Workflow Integration
+
+### What is n8n?
+
+[n8n](https://n8n.io) is an open-source workflow automation platform (similar to Zapier or Make, but self-hosted). It provides a visual, node-based editor for building automation workflows that connect different services — email, Slack, databases, APIs, spreadsheets, and more.
+
+### Why FORECAST Uses n8n
+
+The core LangGraph pipeline handles the **analytical heavy-lifting** — parsing Excel files, detecting anomalies, running scenarios. But after an audit completes, there are **downstream business actions** that vary by organization:
+
+- Email the PDF report to the deal team
+- Post a Slack summary to the `#due-diligence` channel
+- Update a CRM (HubSpot, Salesforce) with the audit status
+- Log the audit in an Airtable or Google Sheets tracker
+- Trigger a follow-up task in Jira or Linear
+- Archive the report to Google Drive or S3
+
+These post-audit actions are **not part of the core audit logic** and change frequently depending on the team's tooling. Hardcoding them into the Python backend would create tight coupling and require redeployment for every change. n8n solves this by externalizing the automation layer.
+
+### How It Works
+
+```
+  FORECAST Backend                          n8n (self-hosted)
+  ================                          =================
+
+  Audit completes
+       |
+       v
+  POST webhook ──────────────────────> /webhook/forecast-audit-complete
+  {                                         |
+    job_id,                                 v
+    company_name,                    ┌──────────────┐
+    report_url                       │ Webhook Node │
+  }                                  └──────┬───────┘
+                                            |
+                                            v
+                                    ┌───────────────┐
+       POST /audit/{id}/n8n-status  │ Your Workflow │
+       <────────────────────────────│               │
+       { status: "Sending Email" }  │  Email Node   │
+                                    │  Slack Node   │
+       POST /audit/{id}/n8n-status  │  CRM Node     │
+       <────────────────────────────│  ...          │
+       { status: "Workflow Complete"}└───────────────┘
+                                            |
+                                    Dashboard shows
+                                    real-time status
+```
+
+### The Data Flow
+
+1. **Trigger** — When the LangGraph pipeline finishes, the `JobManager` fires an async HTTP POST to the n8n webhook URL (`http://localhost:5678/webhook/forecast-audit-complete`) with the `job_id`, `company_name`, and `report_url`.
+
+2. **n8n Processes** — The n8n workflow receives the payload and executes whatever automation nodes you've configured (email, Slack, CRM updates, etc.).
+
+3. **Status Callbacks** — As n8n progresses through each step, it calls back to FORECAST's API (`POST /api/audit/{job_id}/n8n-status`) with status updates like `"Sending Email"`, `"Updating CRM"`, `"Workflow Complete"`.
+
+4. **Dashboard Display** — The frontend Workflow page polls the status endpoint and displays the n8n workflow progress in real-time, including the current stage name and a completion indicator.
+
+### Use Cases
+
+| Workflow | n8n Nodes Used | Description |
+|---|---|---|
+| **Email Report to Team** | Webhook + Email (SMTP/Gmail) | Auto-send the PDF audit report to the deal lead |
+| **Slack Alert** | Webhook + Slack | Post a summary with critical finding count to a channel |
+| **CRM Update** | Webhook + HubSpot/Salesforce | Update the deal stage with audit completion status |
+| **Google Sheets Log** | Webhook + Google Sheets | Append a row with audit metadata for tracking |
+| **Conditional Escalation** | Webhook + IF + Email | If critical findings > 3, escalate to the partner |
+| **Archive to Cloud** | Webhook + HTTP + S3/GDrive | Download the PDF and archive it in cloud storage |
+
+### Running Without n8n
+
+n8n is **entirely optional**. If no n8n instance is running, the webhook call silently fails (caught and logged as a warning), and the audit completes normally. The Workflow page will simply show `"pending"` status. The core audit functionality is completely independent.
+
+### Setting Up n8n (Optional)
+
+```bash
+# Quick start with Docker
+docker run -it --rm -p 5678:5678 n8nio/n8n
+
+# Open n8n at http://localhost:5678
+# Create a workflow starting with a Webhook node
+# Set the webhook path to: /webhook/forecast-audit-complete
+# Add downstream nodes (Email, Slack, HTTP Request for status callbacks, etc.)
+```
+
+---
+
 ## Tech Stack
 
 ### Backend
