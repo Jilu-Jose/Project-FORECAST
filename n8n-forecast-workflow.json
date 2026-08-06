@@ -1,0 +1,122 @@
+{
+  "name": "FORECAST Audit Complete Notification",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "forecast-audit-complete",
+        "options": {}
+      },
+      "id": "1",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        200,
+        300
+      ],
+      "webhookId": "forecast-audit-complete-trigger"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ 'http://host.docker.internal:8000/api/audit/' + $json.body.job_id + '/n8n-status' }}",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "status",
+              "value": "Generating Email Notification..."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "2",
+      "name": "Set Status: Processing",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        400,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "amount": 3,
+        "unit": "seconds"
+      },
+      "id": "3",
+      "name": "Wait (Simulate API)",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [
+        600,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ 'http://host.docker.internal:8000/api/audit/' + $('Webhook').item.json.body.job_id + '/n8n-status' }}",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "status",
+              "value": "Workflow Complete"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "4",
+      "name": "Set Status: Complete",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        800,
+        300
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Set Status: Processing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Status: Processing": {
+      "main": [
+        [
+          {
+            "node": "Wait (Simulate API)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait (Simulate API)": {
+      "main": [
+        [
+          {
+            "node": "Set Status: Complete",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {},
+  "versionId": "bb269d04-4b55-4ff1-ad4e-e11593efd965",
+  "id": "forecast_workflow_1"
+}
