@@ -1,6 +1,38 @@
+```
+███████╗ ██████╗ ██████╗ ███████╗ ██████╗ █████╗ ███████╗████████╗
+██╔════╝██╔═══██╗██╔══██╗██╔════╝██╔════╝██╔══██╗██╔════╝╚══██╔══╝
+█████╗  ██║   ██║██████╔╝█████╗  ██║     ███████║███████╗   ██║
+██╔══╝  ██║   ██║██╔══██╗██╔══╝  ██║     ██╔══██║╚════██║   ██║
+██║     ╚██████╔╝██║  ██║███████╗╚██████╗██║  ██║███████║   ██║
+╚═╝      ╚═════╝ ╚═╝  ╚═╝╚══════╝ ╚═════╝╚═╝  ╚═╝╚══════╝   ╚═╝
+```
+
 # FORECAST — Agentic Financial Model Auditor
 
 > **A multi-agent AI system that ingests startup financial models (Excel/CSV) and produces investor-grade audit reports — powered by LangGraph orchestration and NVIDIA Nemotron LLM.**
+
+<p align="left">
+  <img alt="Python" src="https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white">
+  <img alt="FastAPI" src="https://img.shields.io/badge/FastAPI-0.115-009688?logo=fastapi&logoColor=white">
+  <img alt="LangGraph" src="https://img.shields.io/badge/LangGraph-0.4.1-1C3C3C">
+  <img alt="React" src="https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black">
+  <img alt="NVIDIA NIM" src="https://img.shields.io/badge/NVIDIA%20NIM-Nemotron%203%20Super%20120B-76B900?logo=nvidia&logoColor=white">
+  <img alt="License" src="https://img.shields.io/badge/License-Educational-lightgrey">
+</p>
+
+---
+
+## 🎥 Video Demo
+
+> **YouTube:** `https://youtu.be/WkJoQr_kiMo?si=ebXWUhBomfv7rrEs` 
+
+<p align="left">
+  <a href="https://youtu.be/WkJoQr_kiMo?si=ebXWUhBomfv7rrEs">
+    <img src="https://img.shields.io/badge/▶-Watch%20the%20Demo%20on%20YouTube-FF0000?logo=youtube&logoColor=white&style=for-the-badge" alt="Watch the FORECAST demo on YouTube">
+  </a>
+</p>
+
+A full walkthrough of the FORECAST pipeline — uploading a startup financial model, watching the 7-agent audit run in real time, and reviewing the generated investor-ready report.
 
 ---
 
@@ -375,7 +407,7 @@ Project-FORECAST/
 │   │   ├── api/                 # REST endpoint routers
 │   │   │   ├── audit.py         # Upload, status, report endpoints
 │   │   │   └── history.py       # History, diff, delete endpoints
-│   │   ├── models/              # Data models
+│   │   ├── models/               # Data models
 │   │   │   ├── database.py      # SQLAlchemy ORM models
 │   │   │   └── schemas.py       # Pydantic validation schemas
 │   │   ├── services/            # Business logic services
