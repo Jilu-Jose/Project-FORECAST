@@ -1,40 +1,38 @@
 import { NavLink, useParams, useNavigate } from 'react-router-dom';
-import { UploadCloud, History, LayoutDashboard, FileSearch, LineChart, FileText, Settings, Workflow, ChevronLeft, ChevronRight } from 'lucide-react';
+import { UploadCloud, History, LayoutDashboard, FileSearch, LineChart, FileText, Settings, Workflow, ChevronLeft, ChevronRight, X } from 'lucide-react';
 
-export default function Sidebar({ isCollapsed, toggleCollapse }) {
+export default function Sidebar({ isCollapsed, toggleCollapse, mobileOpen, closeMobile }) {
   const { jobId } = useParams();
   const navigate = useNavigate();
-
-  const handleDisabledClick = (e) => {
-    // No longer disabling clicks
-  };
 
   const targetJobId = jobId || '';
 
   return (
-    <aside className={`sidebar ${isCollapsed ? 'collapsed' : ''}`}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '2.5rem', justifyContent: isCollapsed ? 'center' : 'flex-start' }}>
-        <div style={{ width: 32, height: 32, background: 'var(--primary)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 'bold', flexShrink: 0 }}>
-          F
-        </div>
-        {!isCollapsed && (
-          <div>
-            <div style={{ fontFamily: 'Lora', fontWeight: 700, fontSize: '1.2rem', color: 'var(--primary)', lineHeight: 1 }}>FORECAST</div>
-            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Audit Suite</div>
+    <aside className={`sidebar ${isCollapsed ? 'collapsed' : ''} ${mobileOpen ? 'mobile-visible' : ''}`}>
+      {/* Top row: logo + collapse/close buttons */}
+      <div className="sidebar-top-row">
+        <div className="sidebar-logo-group" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <div style={{ width: 32, height: 32, background: 'var(--primary)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 'bold', flexShrink: 0 }}>
+            F
           </div>
-        )}
-      </div>
+          {!isCollapsed && (
+            <div>
+              <div style={{ fontFamily: 'Lora', fontWeight: 700, fontSize: '1.2rem', color: 'var(--primary)', lineHeight: 1 }}>FORECAST</div>
+              <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Audit Suite</div>
+            </div>
+          )}
+        </div>
 
-      <button 
-        onClick={toggleCollapse} 
-        style={{ 
-          background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', 
-          position: 'absolute', top: '1.5rem', right: isCollapsed ? '1rem' : '0.5rem',
-          display: 'flex', alignItems: 'center', justifyContent: 'center'
-        }}
-      >
-        {isCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
-      </button>
+        {/* Desktop collapse toggle */}
+        <button className="sidebar-collapse-btn" onClick={toggleCollapse} aria-label="Toggle sidebar">
+          {isCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+        </button>
+
+        {/* Mobile close button */}
+        <button className="sidebar-close-btn" onClick={closeMobile} aria-label="Close sidebar">
+          <X size={20} />
+        </button>
+      </div>
 
       <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', flex: 1 }}>
         <NavLink 

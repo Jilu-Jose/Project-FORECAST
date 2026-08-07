@@ -74,7 +74,7 @@ export default function Scenarios() {
         )}
       </div>
 
-      <div className="card-grid-3" style={{ gridTemplateColumns: 'repeat(2, 1fr)' }}>
+      <div className="card-grid-3 scenario-grid">
         {scenarios.slice(0, 4).map((s, idx) => (
           <div key={idx} className="card" style={{ border: '1px solid var(--border-light)', boxShadow: 'none' }}>
             <h4 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--primary)', marginBottom: '1rem', fontSize: '0.95rem' }}>

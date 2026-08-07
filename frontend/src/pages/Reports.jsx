@@ -24,7 +24,7 @@ export default function Reports() {
   if (!report) return <Loader message="Generating executive report..." />;
 
   return (
-    <div style={{ display: 'flex', gap: '2rem', height: 'calc(100vh - 120px)' }}>
+    <div className="reports-layout">
       {/* Left Pane: Preview */}
       <div className="card" style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: 0, overflow: 'hidden' }}>
         <div style={{ padding: '1rem 1.5rem', borderBottom: '1px solid var(--border-light)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -79,7 +79,7 @@ export default function Reports() {
       </div>
 
       {/* Right Pane: Controls */}
-      <div style={{ width: '300px', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+      <div className="reports-controls">
         
         <div className="card">
           <h4 style={{ fontSize: '0.9rem', fontWeight: 600, marginBottom: '1rem' }}>Export Format</h4>

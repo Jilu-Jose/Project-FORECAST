@@ -71,7 +71,7 @@ FORECAST uses **7 specialized agents** orchestrated by LangGraph into a sequenti
 ├─────────────────────────────────────────────────────────────────────────────────┤
 │                                                                                 │
 │   ┌──────────┐    ┌────────────┐    ┌────────────┐    ┌───────────┐             │
-│   │ INGEST   │───▶│ STRUCTURAL │───▶│ ASSUMPTION │───▶│ BENCHMARK │             │
+│   │ INGEST   │───▶│ STRUCTURAL │───▶│ ASSUMPTION │───▶│ BENCHMARK │            │
 │   │          │    │            │    │            │    │           │             │
 │   │ Parse    │    │ Formula    │    │ Extract    │    │ Compare   │             │
 │   │ Excel    │    │ Forensics  │    │ Key Metrics│    │ vs Sector │             │
@@ -80,13 +80,13 @@ FORECAST uses **7 specialized agents** orchestrated by LangGraph into a sequenti
 │   └──────────┘    └────────────┘    └────────────┘    └───────────┘             │
 │        │                                                    │                   │
 │        ▼                                                    ▼                   │
-│   ┌──────────────┐    ┌──────────┐                  ┌───────────┐              │
-│   │ CONSISTENCY  │───▶│ SCENARIO │──────┬──────────▶│  REPORT   │──▶ END       │
-│   │              │    │          │      │           │           │              │
-│   │ Cross-Sheet  │    │ ±20%     │      │ No Cap    │ Generate  │              │
-│   │ Reconcile    │    │ Sensitiv │      │ Table     │ PDF/DOCX  │              │
-│   │ Balance Chk  │    │ Analysis │      │           │ Markdown  │              │
-│   └──────────────┘    └──────────┘      │           └───────────┘              │
+│   ┌──────────────┐    ┌──────────┐                  ┌───────────┐               │
+│   │ CONSISTENCY  │───▶│ SCENARIO │──────┬──────────▶│  REPORT   │──▶ END      │
+│   │              │    │          │      │           │           │               │
+│   │ Cross-Sheet  │    │ ±20%     │      │ No Cap    │ Generate  │               │
+│   │ Reconcile    │    │ Sensitiv │      │ Table     │ PDF/DOCX  │               │
+│   │ Balance Chk  │    │ Analysis │      │           │ Markdown  │               │
+│   └──────────────┘    └──────────┘      │           └───────────┘               │
 │                                         │                 ▲                     │
 │                                         │ Has Cap         │                     │
 │                                         │ Table?          │                     │
